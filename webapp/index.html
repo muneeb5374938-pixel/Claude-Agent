@@ -1,1 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1c1c1e" />
+  <title>Claude Agent</title>
 
+  <!-- Telegram Web App SDK — must be first -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Monetag Rewarded Interstitial SDK (Zone ID: 11245779) -->
+  <script src='//libtl.com/sdk.js' data-zone='11245779' data-sdk='show_11245779'></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p class="loading-text">Loading Claude Agent…</p>
+</div>
+
+<div id="app">
+
+  <header class="header">
+    <p class="header-title">Claude Agent · CA Tokens</p>
+    <div>
+      <span id="balance-display" class="balance-amount">—</span>
+      <span class="balance-unit">CA</span>
+    </div>
+    <p class="ads-counter">
+      Ads watched today: <span id="ads-today">—</span>/<span>20</span>
+    </p>
+  </header>
+
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-tab="watch" role="tab" aria-selected="true">
+      <span class="tab-icon">📺</span>Watch Ad
+    </button>
+    <button class="nav-tab" data-tab="balance" role="tab">
+      <span class="tab-icon">💰</span>Balance
+    </button>
+    <button class="nav-tab" data-tab="referral" role="tab">
+      <span class="tab-icon">👫</span>Referral
+    </button>
+    <button class="nav-tab" data-tab="profile" role="tab">
+      <span class="tab-icon">👤</span>Profile
+    </button>
+    <button class="nav-tab" data-tab="withdraw" role="tab">
+      <span class="tab-icon">💸</span>Withdraw
+    </button>
+  </nav>
+
+  <section id="section-watch" class="section active">
+    <div class="watch-ad-hero">
+      <div class="watch-icon">📺</div>
+      <h2>Watch &amp; Earn</h2>
+      <p>Watch a short ad and earn <strong>10 CA tokens</strong> instantly.<br />
+         Up to 20 ads per day.</p>
+      <button id="watch-ad-btn" class="btn btn-primary">
+        ▶&nbsp; Watch Ad
+      </button>
+      <div class="limit-bar-wrap" style="margin-top:20px;">
+        <div id="limit-bar" class="limit-bar-fill" style="width:0%"></div>
+      </div>
+      <p id="limit-label" class="limit-label">0 / 20 today</p>
+    </div>
+    <div class="card">
+      <p class="card-title">How it works</p>
+      <div class="stat-row">
+        <span class="stat-label">📺 Per ad watched</span>
+        <span class="stat-value">+10 CA</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">🔄 Daily limit</span>
+        <span class="stat-value">20 ads</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">👫 Referral bonus</span>
+        <span class="stat-value">+1 CA / ad</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-balance" class="section">
+    <div class="card">
+      <p class="card-title">Current Balance</p>
+      <div class="card-value"><span id="bal-display">—</span> <span style="color:var(--accent);font-size:18px;">CA</span></div>
+      <p class="card-sub">CA tokens accumulate in your wallet</p>
+    </div>
+    <div class="card">
+      <p class="card-title">Statistics</p>
+      <div class="stat-row">
+        <span class="stat-label">📺 Ads watched today</span>
+        <span class="stat-value" id="stat-ads-today">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">⏳ Ads remaining today</span>
+        <span class="stat-value" id="stat-ads-remaining">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">📊 Total ads watched</span>
+        <span class="stat-value" id="stat-total-ads">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">💎 CA from referrals</span>
+        <span class="stat-value" id="stat-ref-ca">—</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-referral" class="section">
+    <div class="card">
+      <p class="card-title">Your Referral Link</p>
+      <div class="referral-link-box">
+        <span id="ref-link-text" class="referral-link-text">Loading…</span>
+        <button id="copy-link-btn" class="copy-btn">Copy</button>
+      </div>
+      <p class="card-sub">Share this link. Earn 10% CA bonus on every ad your friends watch.</p>
+    </div>
+    <div class="card">
+      <p class="card-title">Referral Stats</p>
+      <div class="stat-row">
+        <span class="stat-label">👥 Friends referred</span>
+        <span class="stat-value" id="ref-count">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">💎 CA earned from referrals</span>
+        <span class="stat-value" id="ref-ca-earned">—</span>
+      </div>
+    </div>
+    <div class="card" id="ref-friends-card" style="display:none;">
+      <p class="card-title">Referred Friends</p>
+      <div id="ref-friends-list"></div>
+    </div>
+  </section>
+
+  <section id="section-profile" class="section">
+    <div class="card" style="text-align:center;padding:24px 16px;">
+      <div id="avatar-circle" class="avatar-circle">?</div>
+      <p id="profile-name" class="profile-name">—</p>
+      <p id="profile-id" class="profile-id">ID: —</p>
+    </div>
+    <div class="card">
+      <p class="card-title">Account Details</p>
+      <div class="stat-row">
+        <span class="stat-label">🪪 Username</span>
+        <span class="stat-value" id="prof-username">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">🆔 Telegram ID</span>
+        <span class="stat-value" id="prof-telegram-id">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">📅 Joined</span>
+        <span class="stat-value" id="prof-join-date">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">💰 CA Balance</span>
+        <span class="stat-value" id="prof-balance">—</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-withdraw" class="section">
+    <div class="card">
+      <div class="coming-soon-box">
+        <div class="cs-icon">🔒</div>
+        <h3>Coming Soon</h3>
+        <p>Withdrawals will be available once CA token price is announced during the airdrop listing.</p>
+        <p style="margin-top:12px;color:var(--warn);font-size:13px;">
+          Keep earning tokens now — the higher your balance, the bigger your airdrop!
+        </p>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-title">Your Balance</p>
+      <div class="card-value"><span id="wd-balance">—</span> CA</div>
+      <p class="card-sub">Tokens will be transferable at listing.</p>
+    </div>
+  </section>
+
+</div>
+
+<div id="toast" role="alert" aria-live="assertive"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
